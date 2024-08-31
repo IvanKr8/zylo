@@ -1,0 +1,9 @@
+USE_IMAGE golang:latest
+
+SET_WORKDIR /home/vania/app
+
+COPY_TO /home/vania/app FROM /home/vania/src
+
+EXECUTE go build -o /home/vania/app/main /home/vania/app
+
+START_WITH ./main
