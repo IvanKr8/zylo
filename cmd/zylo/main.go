@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/IvanKr8/zylo/internal/zyloFile/commands"
+	"github.com/IvanKr8/zylo/internal/container/engine"
 	"github.com/IvanKr8/zylo/internal/zyloFile/finder"
 	"github.com/IvanKr8/zylo/internal/zyloFile/parser"
 	"log"
@@ -21,7 +21,7 @@ func main() {
 		log.Fatalf("Error parsing ZyloFile: %v", err)
 	}
 
-	if err = commands.ExecuteCommands(config); err != nil {
+	if err = engine.CreateContainer(config); err != nil {
 		log.Fatalf("Error executing Zylo commands: %v", err)
 	}
 }

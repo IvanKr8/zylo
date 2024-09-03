@@ -7,8 +7,9 @@ import (
 )
 
 func ZyloFinder(fileName string) (string, error) {
-	startDir := "."
 	var foundFile string
+	startDir := "."
+
 	err := filepath.Walk(startDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err

@@ -1,4 +1,4 @@
-package commands
+package engine
 
 import (
 	"fmt"
@@ -8,14 +8,15 @@ import (
 	"path/filepath"
 )
 
-func ExecuteCommands(config *types.ZyloConfig) error {
-	if config.Workdir != "" {
-		fmt.Printf("Setting working directory to %s...\n", config.Workdir)
-		if err := os.MkdirAll(config.Workdir, os.ModePerm); err != nil {
-			return fmt.Errorf("failed to create workdir: %v", err)
-		}
+func createWorkdir(workdir string) error {
+	fmt.Printf("Setting working directory to %s...\n", workdir)
+	if err := os.MkdirAll(workdir, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create workdir: %v", err)
 	}
+	return nil
+}
 
+func copyFiles(config *types.ZyloConfig) error {
 	for src, dest := range config.Copies {
 		fmt.Printf("Copying %s to %s...\n", src, dest)
 
@@ -41,28 +42,33 @@ func ExecuteCommands(config *types.ZyloConfig) error {
 			}
 		}
 	}
+	return nil
+}
 
-	for _, command := range config.Commands {
+func executeCommands(commands []string, workdir string) error {
+	for _, command := range commands {
 		fmt.Printf("Executing command: %s\n", command)
 		cmd := exec.Command("sh", "-c", command)
-		cmd.Dir = config.Workdir
+		cmd.Dir = workdir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to execute command %s: %v", command, err)
 		}
 	}
+	return nil
+}
 
-	if config.Entrypoint != "" {
-		fmt.Printf("Starting entrypoint: %s\n", config.Entrypoint)
-		cmd := exec.Command("sh", "-c", config.Entrypoint)
-		cmd.Dir = config.Workdir
+func startEntrypoint(entrypoint, workdir string) error {
+	if entrypoint != "" {
+		fmt.Printf("Starting entrypoint: %s\n", entrypoint)
+		cmd := exec.Command("sh", "-c", entrypoint)
+		cmd.Dir = workdir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to start entrypoint %s: %v", config.Entrypoint, err)
+			return fmt.Errorf("failed to start entrypoint %s: %v", entrypoint, err)
 		}
 	}
-
 	return nil
 }
