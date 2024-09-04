@@ -6,7 +6,7 @@ import (
 	"syscall"
 )
 
-func setupUTSNamespace(cmd string, args []string, hostname string) error {
+func SetupUTSNamespace(cmd string, args []string, hostname string) error {
 	procAttr := syscall.ProcAttr{
 		Env:   os.Environ(),
 		Files: []uintptr{0, 1, 2},

@@ -1,4 +1,4 @@
-package mount
+package user
 
 import (
 	"fmt"
@@ -6,12 +6,26 @@ import (
 	"syscall"
 )
 
-func SetupMountNamespace(cmd string, args []string, chRootDir string) error {
+func SetupUserNamespace(cmd string, args []string) error {
 	procAttr := syscall.ProcAttr{
 		Env:   os.Environ(),
 		Files: []uintptr{0, 1, 2},
 		Sys: &syscall.SysProcAttr{
-			Cloneflags: syscall.CLONE_NEWNS,
+			Cloneflags: syscall.CLONE_NEWUSER,
+			UidMappings: []syscall.SysProcIDMap{
+				{
+					ContainerID: 0,
+					HostID:      os.Getuid(),
+					Size:        1,
+				},
+			},
+			GidMappings: []syscall.SysProcIDMap{
+				{
+					ContainerID: 0,
+					HostID:      os.Getgid(),
+					Size:        1,
+				},
+			},
 		},
 	}
 
@@ -23,10 +37,6 @@ func SetupMountNamespace(cmd string, args []string, chRootDir string) error {
 	_, err = syscall.Wait4(pid, nil, 0, nil)
 	if err != nil {
 		return fmt.Errorf("failed to wait for child process: %v", err)
-	}
-
-	if err = syscall.Chroot(chRootDir); err != nil {
-		return fmt.Errorf("failed to chroot: %v", err)
 	}
 
 	return nil
